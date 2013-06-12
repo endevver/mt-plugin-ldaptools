@@ -32,7 +32,9 @@ sub pre_save_author {
 
     my ( $ldap, $dn, $ldap_entries ) = __PACKAGE__->ldap_search( $obj->name );
 
+    warn "LDAP distinguished name:\n";
     p $dn;
+    warn "Matching LDAP entries:\n";
     p $ldap_entries;
 }
 
@@ -79,11 +81,13 @@ sub mt_user_search {
 
 sub ldap_search {
     my ( $class, $uid ) = @_;
-    require MT::LDAP;
     return unless $uid;
 
     $uid = lc $uid;
 
+    warn "Looking for LDAP entries with uid=$uid.\n";
+
+    require MT::LDAP;
     my $ldap = MT::LDAP->new
         or die "Loading MT::LDAP failed: ". MT::LDAP->errstr;
 
@@ -94,7 +98,7 @@ sub ldap_search {
 
     unless ( $ldap_entries && @$ldap_entries ) {
         warn "No entries found in LDAP for uid=$uid.\n";
-        print Dumper($dn);
+        print STDERR Dumper($dn);
     }
 
     return ( $ldap, $dn, $ldap_entries );
