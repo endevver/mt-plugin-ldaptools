@@ -1,0 +1,14 @@
+name:           Forensic analyzer for LDAP issues
+id:             LDAPTools
+key:            LDAPTools
+version:        v1.0.0
+description:    Description of this plugin.
+author_name:    "Jay Allen, Endevver LLC"
+author_link:    http://endevver.com/
+
+callbacks:
+    MT::Author::pre_save: $LDAPTools::LDAPTools::pre_save_author
+
+#   log_classes
+#       customlog: MyCustomLog
+

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+echo "Please use mt-ldap instead. Run 'tools/mt-ldap help search' for details."
+

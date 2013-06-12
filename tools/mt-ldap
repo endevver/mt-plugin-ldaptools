@@ -1,0 +1,17 @@
+#!/usr/bin/env perl
+# Author: Jay Allen, Endevver LLC
+
+use strict;
+use warnings;
+
+BEGIN {
+    $ENV{MT_HOME} or die "MT_HOME environment variable not set";
+}
+
+use lib "$ENV{MT_HOME}/addons/Enterprise.pack/lib",
+        "$ENV{MT_HOME}/extlib",
+        "$ENV{MT_HOME}/lib",
+        "$ENV{MT_HOME}/plugins/LDAPTools/lib";
+
+use LDAPTools::CLI;
+LDAPTools::CLI->run;
