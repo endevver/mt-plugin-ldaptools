@@ -80,6 +80,9 @@ sub mt_user_search {
 sub ldap_search {
     my ( $class, $uid ) = @_;
     require MT::LDAP;
+    return unless $uid;
+
+    $uid = lc $uid;
 
     my $ldap = MT::LDAP->new
         or die "Loading MT::LDAP failed: ". MT::LDAP->errstr;
