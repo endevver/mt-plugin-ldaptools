@@ -36,6 +36,8 @@ sub pre_save_author {
     p $dn;
     warn "Matching LDAP entries:\n";
     p $ldap_entries;
+    $_->dump( \*STDERR ) foreach @$ldap_entries;
+
 }
 
 sub mt_user_search {
