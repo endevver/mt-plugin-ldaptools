@@ -16,6 +16,11 @@ sub opt_spec { # ( $class, $app )
     return (shift)->options( +shift );
 }
 
+sub validate_args {
+    my ($self, $opt, $args) = @_;
+    $self->usage_error("No args allowed") if @$args;
+}
+
 sub init_mt {
     my ($self, $cfg) = @_;
     require MT;

@@ -17,6 +17,11 @@ sub options {
     );
 }
 
+sub validate_args {
+    my ($self, $opt, $args) = @_;
+    $self->SUPER::validate_args( $opt, $args );
+}
+
 sub abstract { 'Find and fix title-cased usernames and user status' }
 
 sub description {
