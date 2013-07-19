@@ -29,7 +29,7 @@ sub find_ldap_record {
     my ( $self, $obj ) = @_;
     require LDAPTools::Search::LDAP;
     my $search = LDAPTools::Search::LDAP->new();
-    return $search->by_username( $obj->name );
+    return $search->by_username( ref($obj) ? $obj->name : $obj );
 }
 
 sub report {
@@ -51,8 +51,10 @@ sub report {
         ( @$uname  ? "\t* Username change from ".join(' to ', @$uname) : () ),
     );
 
-    my ( $ldap_entry ) = __PACKAGE__->find_ldap_record( $obj )
-                      || __PACKAGE__->find_ldap_record( $orig );
+    my ( $ldap_entry ) = __PACKAGE__->find_ldap_record( $obj );
+    $ldap_entry      ||= __PACKAGE__->find_ldap_record( $changes->{name}[0] )
+        if $changes->{name};
+
     if ( $ldap_entry ) {
         use IO::String;
         my $iostr = IO::String->new;
