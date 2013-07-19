@@ -87,12 +87,25 @@ use feature ':5.10';
 my $app = MT->new();
 my $obj = $app->model( 'user' )->load({ name => 'genetestone' });
 die unless $obj and $obj->isa('MT::Object');
-$obj->status( INACTIVE() );
-my $orig = $obj->clone();
 
-LDAPTools::Plugin::UserMonitor->pre_save_author( $obj, $orig );
+# say 'TRYING ONE';
+# my $orig = $obj->clone();
+# LDAPTools::Plugin::UserMonitor->pre_save_author( $obj, $orig );
 
+# say 'Status change to inactive';
+# $obj->status( INACTIVE() );
+# my $orig = $obj->clone();
+# LDAPTools::Plugin::UserMonitor->pre_save_author( $obj, $orig );
 
+# say 'Status change to active';
+# $obj->status( ACTIVE() );
+# my $orig = $obj->clone();
+# LDAPTools::Plugin::UserMonitor->pre_save_author( $obj, $orig );
+
+# say 'Username change to active';
+# $obj->name( 'flllauha' );
+# my $orig = $obj->clone();
+# LDAPTools::Plugin::UserMonitor->pre_save_author( $obj, $orig );
 
 1;
 
