@@ -1,14 +1,13 @@
-name:           Forensic analyzer for LDAP issues
+name:           LDAP Tools
 id:             LDAPTools
 key:            LDAPTools
 version:        v1.0.0
-description:    Description of this plugin.
+description:    This plugin provides a set of tools for forensic analysis and alerts of LDAP connectivity and syncing issues
 author_name:    "Jay Allen, Endevver LLC"
 author_link:    http://endevver.com/
 
 callbacks:
-    MT::Author::pre_save: $LDAPTools::LDAPTools::pre_save_author
+    MT::Author::pre_save: $LDAPTools::LDAPTools::Plugin::UserMonitor::pre_save_author
 
 #   log_classes
 #       customlog: MyCustomLog
-

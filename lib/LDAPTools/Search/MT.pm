@@ -1,5 +1,7 @@
 package LDAPTools::Search::MT;
 
+use strict;
+use warnings;
 use MT::Logger::Log4perl qw( get_logger :resurrect l4mtdump );
 use Data::Printer;
 
