@@ -70,7 +70,7 @@ sub report {
                  'Original object data: '. p( $orig ) );
 
     my $logger = get_logger();
-    $logger->warn($_) for @msgs
+    $logger->warn( join("\n", @msgs) );
 }
 
 1;
