@@ -35,10 +35,8 @@ sub find_ldap_record {
 sub report {
     my ( $self, $changes, $obj, $orig ) = @_;
 
-    my @msgs = ( 'User modification report for '
-                . $obj->name
-                . ' '
-                . Carp::longmess() );
+    my $subject = 'User modification report for ' . $obj->name;
+    my @msgs = ( join(' ', $subject, Carp::longmess() ));
 
     my $utype  = $obj->type eq COMMENTER ? 'Commenter' : 'Author';
     my $status = $changes->{status} || [];
