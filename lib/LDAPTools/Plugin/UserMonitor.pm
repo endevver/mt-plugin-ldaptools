@@ -43,7 +43,7 @@ sub report {
     my $uname  = $changes->{name}   || [];
 
     push( @msgs,
-        sprintf(  "User record alert for %s '%s' (ID:%d, Auth:%s):\n\n",
+        sprintf(  "\nUser record alert for %s '%s' (ID:%d, Auth:%s):\n\n",
                     $utype, $obj->name, $obj->id, $obj->auth_type           ),
         ( @$status ? "\t* User's MT record is being disabled"          : () ),
         ( @$uname  ? "\t* Username change from ".join(' to ', @$uname) : () ),
@@ -57,15 +57,15 @@ sub report {
         use IO::String;
         my $iostr = IO::String->new;
         $ldap_entry->dump( $iostr );
-        push( @msgs, 'LDAP entry for '.$obj->name,
+        push( @msgs, "\nLDAP entry for ".$obj->name,
                      ${$iostr->string_ref} );
     }
     else {
         push( @msgs, 'No LDAP entry for '.$obj->name );
     }
 
-    push( @msgs, 'Changes: '. p( $changes ),
-                 'Original object data: '. p( $orig ) );
+    push( @msgs, "\nChanges: "              . p( $changes ),
+                 "\nOriginal object data: " . p( $orig    ) );
 
     my $logger = get_logger();
     $logger->warn( join("\n", @msgs) );
