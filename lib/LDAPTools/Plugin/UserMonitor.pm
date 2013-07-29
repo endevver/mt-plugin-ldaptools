@@ -67,8 +67,11 @@ sub report {
     push( @msgs, "\nChanges: "              . p( $changes ),
                  "\nOriginal object data: " . p( $orig    ) );
 
-    my $logger = get_logger();
-    $logger->warn( join("\n", @msgs) );
+    get_logger()->log(
+        level   => 'warn',
+        subject => $subject,
+        message => join("\n", @msgs),
+    );
 }
 
 1;
