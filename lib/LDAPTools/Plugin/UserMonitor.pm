@@ -67,8 +67,7 @@ sub report {
     push( @msgs, "\nChanges: "              . p( $changes ),
                  "\nOriginal object data: " . p( $orig    ) );
 
-    get_logger()->log(
-        level   => 'warn',
+    get_logger('mtmail')->warn(
         subject => $subject,
         message => join("\n", @msgs),
     );
