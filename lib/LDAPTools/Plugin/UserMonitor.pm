@@ -34,42 +34,49 @@ sub find_ldap_record {
 
 sub report {
     my ( $self, $changes, $obj, $orig ) = @_;
-
-    my $subject = 'User modification report for ' . $obj->name;
-    my @msgs = ( join(' ', $subject, Carp::longmess() ));
-
-    my $utype  = $obj->type eq COMMENTER ? 'Commenter' : 'Author';
-    my $status = $changes->{status} || [];
-    my $uname  = $changes->{name}   || [];
-
-    push( @msgs,
-        sprintf(  "\nUser record alert for %s '%s' (ID:%d, Auth:%s):\n\n",
-                    $utype, $obj->name, $obj->id, $obj->auth_type           ),
-        ( @$status ? "\t* User's MT record is being disabled"          : () ),
-        ( @$uname  ? "\t* Username change from ".join(' to ', @$uname) : () ),
-    );
-
+    my $utype          = $obj->type eq COMMENTER ? 'Commenter' : 'Author';
+    my $status         = $changes->{status} || [];
+    my $uname          = $changes->{name}   || [];
+    my $subject        = 'User modification report for ' . $obj->name;
     my ( $ldap_entry ) = __PACKAGE__->find_ldap_record( $obj );
     $ldap_entry      ||= __PACKAGE__->find_ldap_record( $changes->{name}[0] )
         if $changes->{name};
 
+    my @msgs = (
+        sprintf(  "## User record alert for %s '%s' (ID:%d, Auth:%s):\n",
+                    $utype, $obj->name, $obj->id, $obj->auth_type           ),
+        ( @$status ? "* User's MT record is being disabled"          : () ),
+        ( @$uname  ? "* Username change from ".join(' to ', @$uname) : () ),
+        "\n----\n",
+    );
+
+    push( @msgs, "## LDAP record for ".$obj->name."\n" );
     if ( $ldap_entry ) {
-        use IO::String;
+        require IO::String;
         my $iostr = IO::String->new;
         $ldap_entry->dump( $iostr );
-        push( @msgs, "\nLDAP entry for ".$obj->name,
-                     ${$iostr->string_ref} );
+        push( @msgs, "@@@", ${$iostr->string_ref}, "@@@" );
     }
-    else {
-        push( @msgs, 'No LDAP entry for '.$obj->name );
-    }
+    else { push( @msgs, 'No LDAP entry for '.$obj->name."\n" ) }
 
-    push( @msgs, "\nChanges: "              . p( $changes ),
-                 "\nOriginal object data: " . p( $orig    ) );
+    push( @msgs,
+        "\n----\n",
+        "## MT Author record\n",
+        "@@@",
+        "Changes: "                . p( $changes ),
+        "\nOriginal object data: " . p( $orig    ),
+        "@@@",
+        "\n----\n",
+        "## Stack Trace\n",
+        "@@@",
+        "Triggered at ".Carp::longmess(),
+        "@@@",
+        qq(\n[tagged:ldaptools-alert tagged:log4mt responsible:"Jay Allen" milestone:next])
+    );
 
     get_logger('mtmail')->warn(
         subject => $subject,
-        message => join("\n", @msgs),
+        message => join( "\n", @msgs ),
     );
 }
 
