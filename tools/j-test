@@ -1,0 +1,88 @@
+#!/usr/local/bin/perl -w
+
+use strict;
+use v5.12.0;
+
+BEGIN {
+    die "Must set MT_HOME" unless $ENV{MT_HOME};
+    use lib $ENV{MT_HOME}."/addons/Enterprise.pack/lib",
+            $ENV{MT_HOME}."/lib",
+            $ENV{MT_HOME}."/extlib";
+}
+
+$| = 1;
+
+use Data::Printer;
+use MT::App::Comments;
+use MT::LDAP;
+use URI;
+
+my $app        = start_app();
+my $ldap       = start_ldap();
+my $duration   = 1;
+my $multiplier = 2;
+
+while ( $duration < 3601 ) {
+    if ( is_alive( $ldap ) ) {
+        print "$duration ";
+    }
+    else {
+        warn "is_alive false at $duration: $!\n$@\n";
+        dump_keyval( 'MT::LDAP instance',  $ldap         );
+        dump_keyval( 'Net::LDAP instance', $ldap->{ldap} );
+        exit;
+    }
+
+#    eval {
+#      local $SIG{INT} = sub { die "Aborted!\n" };
+       sleep( $duration );
+       $duration *= $multiplier;
+#    };
+#    die $@ unless $@ eq "Aborted!\n";
+
+}
+
+sub mt_ldap { MT::LDAP->new() }
+
+sub is_alive { shift()->get_dn('allenjrj') }
+
+sub start_ldap {
+    my @args = @_;
+
+    if ( @args ) {
+        die "start_ldap does not take args";
+        # @args or push( @args, get_ldap_url() );
+        # my $class = 'ldaps' eq $uri->scheme ? 'Net::LDAPS' : 'Net::LDAP';
+        # load_class( $class );
+        # $ldap->{ldap} = $class->new( @args || get_ldap_url() );
+    }
+
+    my $ldap = mt_ldap() unless @args;
+    
+    dump_keyval( 'MT::LDAP instance',  $ldap         );
+
+    if ( $ldap->{ldap} ) {
+        dump_keyval( 'Net::LDAP instance', $ldap->{ldap} )
+    }
+    else {
+        die "Net::LDAP connection error: $!\n$@\n";
+        # my $err    = $@;
+        # my $errstr = MT->translate("Error connecting to LDAP server [_1]: [_2]", $server, $err);
+        # return MT::LDAP->error($errstr);
+    }
+
+    $ldap
+}
+
+sub start_app {
+    my $app
+        = MT::App::Comments->new(Config => $ENV{MT_HOME}.'/mt-config.cgi')
+      or die "Could not start the app";
+    say "App: " . p($app);
+    $app
+}
+
+sub dump_keyval {
+    my ($k,$v) = @_;
+    say "$k: ". p($v);
+}
