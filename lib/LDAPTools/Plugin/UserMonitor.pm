@@ -7,6 +7,7 @@ use MT::Author qw( ACTIVE INACTIVE COMMENTER );
 
 use MT::Logger::Log4perl qw( get_logger :resurrect l4mtdump );
 use Data::Printer;
+use POSIX;
 
 sub pre_save_author {
     my ( $cb, $obj, $orig ) = @_;
@@ -37,7 +38,9 @@ sub report {
     my $utype          = $obj->type eq COMMENTER ? 'Commenter' : 'Author';
     my $status         = $changes->{status} || [];
     my $uname          = $changes->{name}   || [];
-    my $subject        = 'User modification report for ' . $obj->name;
+    my @uname_cmd      = POSIX::uname();
+    my $host           = $uname_cmd[1];
+    my $subject        = 'User modification report for ' . $obj->name . " ($host)";
     my ( $ldap_entry ) = __PACKAGE__->find_ldap_record( $obj );
     $ldap_entry      ||= __PACKAGE__->find_ldap_record( $changes->{name}[0] )
         if $changes->{name};
@@ -71,7 +74,7 @@ sub report {
         "@@@",
         "Triggered at ".Carp::longmess(),
         "@@@",
-        qq(\n[tagged:ldaptools-alert tagged:log4mt responsible:"Jay Allen" milestone:next])
+        qq(\n[tagged:ldaptools-alert tagged:log4mt responsible:"Jay Allen" milestone:"Log Data"])
     );
 
     get_logger('mtmail')->warn(
