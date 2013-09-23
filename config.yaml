@@ -1,7 +1,7 @@
 name:           LDAP Tools
 id:             LDAPTools
 key:            LDAPTools
-version:        v1.0.4
+version:        v1.0.5
 description:    This plugin provides a set of tools for forensic analysis and alerts of LDAP connectivity and syncing issues
 author_name:    "Jay Allen, Endevver LLC"
 author_link:    http://endevver.com/
