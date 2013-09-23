@@ -13,14 +13,21 @@ sub description { return 'Abstract: ' . (shift)->abstract }
 sub options {
     my ( $class, $app ) = @_;
     return (
-        [ 'field' => 'hidden' => {
-            one_of => [
-                [ 'id=i'          => "load by MT user ID" ],
-                [ 'username|un=s' => "load by MT username (case-insensitive)"],
-                [ 'name|dn=s'     => "load user(s) matching MT display name" ],
-                [ 'titlecased'    => "load users with title-cased username"  ],
-            ]
-        } ],
+        [
+            'field' => 'hidden',
+            {
+                one_of => [
+                      [ 'id=i'          => "load by MT user ID" ],
+                      [ 'username|un=s' => "load by MT username (case-insensitive)" ],
+                      [ 'name|dn=s'     => "load user(s) matching MT display name"  ],
+                ],
+            } 
+        ],
+        [],
+        [ 'titlecased'    => 'return only users with title-cased usernames'  ],
+        [ 'disabled'      => 'return only disabled users'                    ],
+        [ 'ldap!'         => 'return only users with/without an LDAP record' ],
+        [ 'count'         => 'only show a count of matching users'           ],
         $class->global_options($app),
     );
 }
@@ -34,18 +41,26 @@ sub validate_args {
 sub execute {
     my ($self, $opt, $args) = @_;
 
+    p $opt;
+
     my $mt = $self->init_mt( $opt->{cfg} );
 
     my $users = $self->mt_user_search( $opt );
     @$users   = map { { mt => $_ } } @$users;
 
-    return $self->ldap_search( $opt, [] ) unless @$users;
-
-    foreach my $u ( @$users ) {
-        p $u->{mt}->column_values;
-        $self->ldap_search( $opt, [$u] );
+    if ( $opt->{count} ) {
+        printf "%d users found matching search criteria\n", scalar(@$users);
     }
-    return $users;
+    elsif ( ! @$users ) {
+        return $self->ldap_search( $opt, [] );
+    }
+    else {
+        foreach my $u ( @$users ) {
+            p $u->{mt}->column_values;
+            $self->ldap_search( $opt, [$u] );
+        }
+    }
+    return $users;   
 }
 
 
@@ -54,17 +69,18 @@ sub mt_user_search {
     require LDAPTools::Search::MT;
     # my $search = LDAPTools::Search::MT->new();
     my $search = 'LDAPTools::Search::MT';
-    return $opt->{titlecased} ? $search->titlecased()
-         : $opt->{id}         ? $search->by_id( $opt->{id} )
+    return $opt->{id}         ? $search->by_id( $opt->{id} )
          : $opt->{name}       ? $search->by_name( $opt->{name} )
          : $opt->{username}   ? $search->by_username( $opt->{username} )
+         : $opt->{titlecased} ? $search->filtered_search( $opt )
+         : $opt->{disabled}   ? $search->filtered_search( $opt )
                               : die "No search criteria specified";
 }
 
 sub ldap_search {
     my ( $class, $opt, $users ) = @_;
 
-    return if ($opt->{id} || $opt->{titlecased} and ! @$users);
+    return if ( $opt->{id} || $opt->{titlecased} || $opt->{disabled} ) && ! @$users;
 
     require LDAPTools::Search::LDAP;
     if ( @$users ) {

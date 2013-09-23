@@ -24,17 +24,17 @@ sub by_username {
                 ]);
 }
 
-sub titlecased {
-    my $self = shift;
+sub filtered_search {
+    my ( $self, $opt ) = @_;
     my $User = MT->instance->model('user');
     my $iter = $User->load_iter();
     my @users;
     while ( my $user = $iter->() ) {
-        push( @users, $user )
-            if $user->name =~ m/^([:upper:]|\p{IsUpper})/;
+	next if $opt->{titlecased} && $user->name   !~ m/^([[:upper:]]|\p{IsUpper})/;
+	next if $opt->{disabled}   && $user->status != $user->INACTIVE;
+        push( @users, $user );
     }
-    get_logger()->info( scalar(@users)
-                        ." users found in titlecased search" );
+    # get_logger()->info( scalar(@users) ." users found in titlecased search" );
     return \@users;
 }
 
