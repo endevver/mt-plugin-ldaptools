@@ -44,15 +44,18 @@ sub execute {
         return $users;
     }
 
-    my $user = shift @$users;
+    my $user = $users->[0];
+    my $umt  = $user->{mt};
+    printf "\n".'Resolving username case and user status (name=%s, status=%d): ', 
+            $umt->name, $umt->status;
 
-    print "Resolving username case and user status: ";
-    $user->name( lc( $user->name ) );
-    $user->status( $user->ACTIVE() )
-        if $user->status == $user->INACTIVE();
-    $user->save
-        or die "Could not save user record: ".$user->errstr;
-    print "OK\n";
+    $umt->name( lc( $umt->name ) );
+    $umt->status( $umt->ACTIVE() )
+        if $umt->status == $umt->INACTIVE();
+    $umt->save
+        or die "Could not save user record: ".$umt->errstr;
+
+    printf "DONE (name=%s, status=%d)\n", $umt->name, $umt->status;
 
     $user;
 }

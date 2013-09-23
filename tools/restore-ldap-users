@@ -1,0 +1,67 @@
+#!/usr/local/bin/perl -w
+
+use strict;
+use v5.12.0;
+
+BEGIN {
+    die "Must set MT_HOME" unless $ENV{MT_HOME};
+    use lib $ENV{MT_HOME}."/addons/Enterprise.pack/lib",
+            $ENV{MT_HOME}."/lib",
+            $ENV{MT_HOME}."/extlib";
+}
+
+use Data::Printer;
+use Getopt::Long;
+use Try::Tiny;
+use MT;
+use MT::LDAP;
+
+$| = 1;
+
+my $app  = start_app();
+my $User = MT->model('user')
+    or die "Error loading 'user' model: ".MT->errstr;
+my $iter = $User->load_iter({ status => 2 })
+    or die "User load_iter failed: " . $User->errstr;
+my $ldap = start_ldap();
+my %cnt  = ( total => 0, restored => 0 );
+
+while ( my $obj = $iter->() ) {
+
+    start_ldap();
+    $cnt{total}++;
+
+    require LDAPTools::Search::LDAP;
+    my $search = LDAPTools::Search::LDAP->new();
+    if ( my $entry  = $search->by_username($obj->name) ) {
+        print $obj->name.": Found LDAP record...";
+        $obj->status( $obj->ACTIVE() );
+        $obj->save or die "Could not save user ".$obj->name;
+        $entry->dump;
+        say "User MT status restored.";
+        $cnt{restored}++;
+    }
+    printf "%d out of %d disabled users restored\n", values %cnt;
+}
+
+
+sub start_ldap {
+    return 1 if try { $ldap && $ldap->ldap->socket->connected };
+    if ( $ldap ) {
+	say "LDAP connection lost. Disconnecting... ".$ldap->unbind_ldap();
+        try   { $ldap->ldap; $ldap->ldap->socket->connected; 1 }
+        catch { die "Could not reestablish LDAP connection" };
+    }
+    else {
+        $ldap = MT::LDAP->new();
+        try   { $ldap->ldap && $ldap->ldap->socket->connected; 1 }
+        catch { die "Net::LDAP connection error: $_"; }
+    }
+    $ldap;
+}
+
+sub start_app {
+    MT->new(Config => $ENV{MT_HOME}.'/mt-config.cgi')
+          or die "Could not start the app: ". MT->errstr;
+}
+
