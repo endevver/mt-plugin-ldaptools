@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!/usr/local/bin/perl
 
 use lib qw( lib extlib );
 use Test::Class::Moose::Load 't/lib';
